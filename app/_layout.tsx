@@ -1,29 +1,45 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
-
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { account } from "@/appwriteConfig";
+import { SplashScreen, Stack } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import Toast from "react-native-toast-message";
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
-  if (!loaded) {
-    // Async font loading only occurs in development.
+  useEffect(() => {
+    checkUserSession();
+  }, []);
+  const checkUserSession = async () => {
+    try {
+      await SplashScreen.preventAutoHideAsync();
+      const user = await account.get();
+      console.log("User is logged in:", user);
+      setIsLoggedIn(true);
+    } catch (error) {
+      console.log("No user session found");
+      setIsLoggedIn(false);
+    }
+  };
+
+  const onLayoutRootView = useCallback(async () => {
+    if (isLoggedIn !== null) {
+      await SplashScreen.hideAsync();
+    }
+  }, [isLoggedIn]);
+
+  if (isLoggedIn == null) {
     return null;
   }
-
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
+    <>
+      <Stack onLayout={onLayoutRootView} screenOptions={{ headerShown: false }}>
+        {isLoggedIn ? (
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        ) : (
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        )}
       </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+      <Toast />
+    </>
   );
 }
