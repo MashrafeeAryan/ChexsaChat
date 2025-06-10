@@ -1,4 +1,4 @@
-import { View, Text, TextInput } from 'react-native'
+import { View, Text, TextInput, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { account, databaseID, databases, messageCollectionID } from '@/appwriteConfig'
@@ -18,9 +18,10 @@ const messages = () => {
            const newMessage = await databases.createDocument(
                 databaseID,
                 messageCollectionID, 
-                messageID,
+                messageID, 
                 {
                     chatId: "chatXY",
+
                     
                 }
            )
@@ -30,7 +31,10 @@ const messages = () => {
     return (
         <SafeAreaView>
             <View>
-                <TextInput></TextInput>
+                <TextInput placeholder='Enter message'></TextInput>
+                <TouchableOpacity onPress={handleMessages}>
+                    <Text>Submit</Text>
+                </TouchableOpacity>
             </View>
         </SafeAreaView>
     )
